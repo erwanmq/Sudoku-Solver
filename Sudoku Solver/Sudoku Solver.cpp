@@ -8,38 +8,92 @@
 #include <opencv2/core/utils/logger.hpp> // for delete the messages in the console
 
 
-bool checkRow(int number, std::vector<int>& _vector, int index)
+bool checkRow(int _number, std::vector<std::vector<int>>& _vector, int _row, int _col)
 {
-	for (int i = 0; i < 9; i++)
+	for (size_t i = 0; i < _vector.size(); i++)
 	{
-		if (_vector[i * 9] == number && i * 9 != index)
+		if (_vector[i][_row] == _number && i != _col)
 			return true;
 	}
 	return false;
 }
 
-bool checkCol(int number, std::vector<int>& _vector, int index)
+bool checkCol(int _number, std::vector<std::vector<int>>& _vector, int _row, int _col)
 {
-	for (int i = 0; i < 9; i++)
+	for (size_t i = 0; i < _vector[_col].size(); i++)
 	{
-		if (_vector[i] == number && i != index)
+		if (_vector[_col][i] == _number && i != _row)
 			return true;
 	}
 	return false;
 }
 
-void resolveSudoku(std::vector<int>& _vector_num_sudoku)
+
+bool checkBox(int _number, std::vector<std::vector<int>>& _vector, int _row, int _col)
 {
-	std::vector<int> numbers_change;
-	numbers_change = _vector_num_sudoku;
-	int listNumbers[9] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-	for (size_t i = 0; i < numbers_change.size(); i++)
+	int row_modulo = _row % 3;
+	int col_modulo = _col % 3;
+
+	for (int i = _col - col_modulo; i < _col - col_modulo + 3; i++) 
 	{
-		if (numbers_change[i] == -1)
+		for (int j = _row - row_modulo; j < _row - row_modulo + 3; j++)
 		{
-			int number = 1;
+			if (_vector[i][j] == _number && i != _col && j != _row) // vrai && faux && vrai
+				return true;
 		}
 	}
+	return false;
+
+}
+
+bool unique_number(int _number, std::vector<std::vector<int>>& _vector, int _row, int _col)
+{
+	if (checkBox(_number, _vector, _row, _col) || checkRow(_number, _vector, _row, _col) || checkCol(_number, _vector, _row, _col))
+		return false;
+
+	return true;
+}
+
+std::vector<std::vector<int>> resolveSudoku(std::vector<std::vector<int>>& _vector_num_sudoku)
+{
+	std::vector<std::vector<int>> numbers_change(_vector_num_sudoku);
+	for (int col = 0; col < numbers_change.size(); col++)
+	{
+		for (int row = 0; row < numbers_change[col].size(); row++)
+		{
+			
+			if (_vector_num_sudoku[col][row] == 0)
+			{
+				int number = 1;
+				while (!unique_number(number, numbers_change, row, col) || number > 9)
+				{
+					if (number < 9)
+						number++;
+
+					else{
+						do {
+							if (_vector_num_sudoku[col][row] == 0)
+								numbers_change[col][row] = 0;
+							if (row > 0)
+								row--;
+							else {
+								row = 8;
+								col--;
+							}
+							number = numbers_change[col][row] + 1;
+						} while (_vector_num_sudoku[col][row] != 0);
+						
+					}
+				}
+				numbers_change[col][row] = number;
+
+			}
+			
+		}
+		
+	}
+
+	return numbers_change;
 }
 
 void saveSquares(const cv::Mat& _sudoku_image, std::vector<cv::Mat>& _vector_to_save)
@@ -68,16 +122,20 @@ void saveSquares(const cv::Mat& _sudoku_image, std::vector<cv::Mat>& _vector_to_
 	}
 }
 
+int number_in_sudoku = 0;
 bool isNumber(cv::Mat& _image)
 {
 	cv::Mat image_clone = _image.clone();
 	
-	cv::cvtColor(image_clone, image_clone, cv::COLOR_BGR2GRAY);
 	cv::threshold(image_clone, image_clone, 140, 255, cv::THRESH_BINARY_INV);
 
 	int val = cv::countNonZero(image_clone);
 	if (val >= 600)
+	{
 		return true;
+		number_in_sudoku++;
+	}
+		
 	return false;
 }
 
@@ -110,7 +168,7 @@ bool checkNine(cv::Mat& _image)
 using contour = std::vector<std::vector<cv::Point>>;
 void findMainContours(std::vector<contour>& _storage_contours)
 {
-	contour main_contours; // contours of main numbers (1-9)
+	contour main_contours;
 	for (int i = 1; i < 10; i++)
 	{
 		cv::Mat image;
@@ -136,19 +194,23 @@ void findSudokuContours(std::vector<contour>& _storage_contours, std::vector<cv:
 		cv::Mat image;
 		image = _vector_of_images[i]; // store the image of one square
 		image = image(cv::Rect(0, image.size().height / 3 - 20, image.size().width, image.size().height / 3 + 20)); // keep the same size as the first contour detection
-		cv::cvtColor(image, image, cv::COLOR_BGR2GRAY); // convert image to gray color
-		cv::threshold(image, image, 128, 255, cv::THRESH_BINARY); // and convert it to binary image
 
 		cv::findContours(image, contours_of_sudoku_numbers, cv::RETR_LIST, cv::CHAIN_APPROX_NONE); // find the contours
 		_storage_contours.push_back(contours_of_sudoku_numbers); // ad them to the vector
+		
 	}
 }
 
-void compareContours(std::vector<contour>& _storage_contours, std::vector<contour> _storage_main_contours, std::vector<cv::Mat>& _vector_of_images, std::vector<int>& _vec_number_in_sudoku)
+void compareContours(std::vector<contour>& _storage_contours, std::vector<contour> _storage_main_contours, std::vector<cv::Mat>& _vector_of_images, std::vector<std::vector<int>>& _vec_number_in_sudoku)
 {
 	std::map<int, double> value_shapes; // map to keep each numbers to his probability
-	for (size_t i = 0; i < _storage_contours.size(); i++) // loop in every square of the sudoku
+
+	_vec_number_in_sudoku.resize(9);
+	int index = 0;
+	for (size_t i = 0; i < _vector_of_images.size(); i++) // loop in every square of the sudoku
 	{
+		if (i % 9 == 0 && i != 0)
+			index++;
 		if (isNumber(_vector_of_images[i])) // check if the square contains a number
 		{
 			for (size_t j = 0; j < _storage_main_contours.size(); j++) // loop 1 to 9
@@ -163,17 +225,18 @@ void compareContours(std::vector<contour>& _storage_contours, std::vector<contou
 			std::map<int, double>::iterator it = std::min_element(value_shapes.begin(), value_shapes.end(),
 				[](const auto& l, const auto& r) { return l.second < r.second; });
 
-
-			//std::cout << it->first << '\n'; // print the number find
-			_vec_number_in_sudoku.push_back(it->first); // add it to the vector
+			_vec_number_in_sudoku[index].push_back(it->first); // add it to the vector
 
 		}
 		else
-			_vec_number_in_sudoku.push_back(-1); //.if the square doesn't contains a number, it stores -1 (empty square)
+			_vec_number_in_sudoku[index].push_back(0); //.if the square doesn't contains a number, it stores 0 (empty square)
+		
+		
+		
 	}
 }
 
-std::vector<int> findNumbers(std::vector<cv::Mat>& _vector)
+std::vector<std::vector<int>> findNumbers(std::vector<cv::Mat>& _vector)
 {
 	std::vector<contour> vec_of_main_contours; // vector of the contours before
 	findMainContours(vec_of_main_contours);
@@ -183,12 +246,20 @@ std::vector<int> findNumbers(std::vector<cv::Mat>& _vector)
 
 	// this methods will compare every contours of the sudoku to all numbers (1-9)
 	// we will use a opencv method that return a double. Smaller is the double, higher is the probability of the right number
-	std::vector<int> numbers_in_sudoku; // will store the number that is the closest about the contours
+	std::vector<std::vector<int>> numbers_in_sudoku; // will store the number that is the closest about the contours
 	compareContours(vec_contours, vec_of_main_contours, _vector, numbers_in_sudoku);
 	
 	
 	return numbers_in_sudoku; // return the vector
 	
+}
+
+std::vector<cv::Vec4i> detectContourLine(cv::Mat& _image)
+{
+	std::vector<cv::Vec4i> lines;
+	cv::HoughLinesP(_image, lines, 1, CV_PI / 180, 50, 50, 10);
+
+	return lines;
 }
 
 int main(int argc, const char* argv[])
@@ -214,17 +285,46 @@ int main(int argc, const char* argv[])
 		return -1;
 	}
 	
+	cv::cvtColor(sudoku_image, sudoku_image, cv::COLOR_BGR2GRAY);
+	cv::threshold(sudoku_image, sudoku_image, 150, 255, cv::THRESH_BINARY);
+
+	cv::Mat line_detection_image;
+	cv::Canny(sudoku_image, line_detection_image, 50, 200, 3);
+
+	std::vector<cv::Vec4i> lines = detectContourLine(line_detection_image);
+	
+
 	std::vector<cv::Mat> vec_squares; // vector to save each square of the sudoku	
 	saveSquares(sudoku_image, vec_squares);
 	
-	std::vector<int> numbers_in_sudoku = findNumbers(vec_squares);
+	std::vector<std::vector<int>> numbers_in_sudoku = findNumbers(vec_squares);
 
-	resolveSudoku(numbers_in_sudoku);
+	numbers_in_sudoku = resolveSudoku(numbers_in_sudoku);
+
+	for (size_t i = 0; i < numbers_in_sudoku.size(); i++)
+	{
+		for (size_t j = 0; j < numbers_in_sudoku[i].size(); j++)
+		{
+			std::cout << numbers_in_sudoku[j][i] << " ";
+		}
+		std::cout << '\n';
+	}
+	std::cout << "there is " << number_in_sudoku << " numbers\n";
 
 	// Creation window
 	cv::String windowName = "image"; // name the window
 	cv::namedWindow(windowName, cv::WINDOW_NORMAL); // create the window
 	
+	cv::cvtColor(sudoku_image, sudoku_image, cv::COLOR_GRAY2BGR);
+	for (size_t i = 0; i < lines.size(); i++)
+	{
+		cv::Vec4i l = lines[i];
+		cv::line(sudoku_image, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]), cv::Scalar(0, 0, 255), 3, cv::LINE_AA);
+	}
+
+	
+
+
 	cv::imshow(windowName, sudoku_image); // show the image in the window
 	
 	cv::waitKey(0); // wait for user entry
