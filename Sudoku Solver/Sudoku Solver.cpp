@@ -21,7 +21,8 @@ int main(int argc, const char* argv[])
 
 
 	cv::Mat sudoku_image;
-	sudoku_image = cv::imread("sudoku.png"); // read the image
+	const char* path_image = *argv;
+	sudoku_image = cv::imread("sudoku_test.png"); // read the image
 
 	if (sudoku_image.empty()) // check if the image was load correctly
 	{
@@ -47,5 +48,21 @@ int main(int argc, const char* argv[])
 
 	sudoku->printResult();
 	sudoku->printResultImage();
+
+	std::cout << "Are your results correct?(Y/n) >>";
+	char answer;
+	do {
+		std::cin >> answer;
+	} while (answer != 'Y' && answer != 'n');
+
+	if (answer == 'n')
+	{
+		sudoku->enterManualNumbers();
+		sudoku->resolveSudoku();
+		sudoku->printResult();
+		sudoku->printResultImage();
+	}
+	
+	sudoku->~Sudoku();
 	return 0;
 }

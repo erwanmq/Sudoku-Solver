@@ -10,7 +10,7 @@ namespace Sudo
 {
 
 
-typedef std::vector<std::vector<cv::Point>> contours_t;
+typedef std::vector<cv::Point> contours_t;
 
 class Sudoku
 {
@@ -21,7 +21,7 @@ private:
 	cv::Mat m_image_gray_thresh = cv::Mat(); // image that store the sudoku gray and threshold
 	cv::Mat m_image_edges = cv::Mat(); // image that stores the edges of the sudoku
 
-	contours_t m_contours{}; // variable that stores the contours of the grid
+	std::vector<contours_t> m_contours{}; // variable that stores the contours of the grid
 	std::vector<std::vector<cv::Mat>> m_squares_vector{}; // vector that stores each squares of the grid
 	std::vector<std::vector<int>> m_numbers_sudoku{}; // vector that stores each numbers of the grid
 	std::vector<std::vector<int>> m_numbers_solutions{}; // vector that stores the solution
@@ -30,6 +30,8 @@ private:
 
 public:
 	Sudoku();
+	Sudoku(cv::Mat& _image);
+	~Sudoku();
 
 	const void initGrid();
 	const bool setImage(cv::Mat& _image);
@@ -38,11 +40,12 @@ public:
 	const void resolveSudoku();
 	const void printResult();
 	const void printResultImage();
+	const void enterManualNumbers();
 
 private:
-	const void getContours();
-	const void convertBGRtoGrayThreshold();
-	const void getEdges();
+	const void getContours(cv::Mat& _image);
+	const void convertBGRtoGrayThreshold(cv::Mat& _image);
+	const void getEdges(cv::Mat& _image);
 	const void saveSquaresToVector();
 	const void isANumber(std::string _text, int _col);
 	const bool unique_number(int _number, int _row, int _col);
