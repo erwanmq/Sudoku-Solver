@@ -2,6 +2,7 @@
 ## What is the project?
 The Sudoku Solver is a c++ program that allows the user to enter a sudoku image and the program gives in output the solution. The program use OpenCV for the image
 processing and Tesseract for numbers recognition.
+
 ### Input:
 ![sudoku2](https://user-images.githubusercontent.com/93351393/211330981-d95aa652-090a-456e-b4c5-bc9a2e0c4939.png)
 ### Output:
@@ -9,6 +10,10 @@ processing and Tesseract for numbers recognition.
 
 ### You can see a demo of this program in this youtube video: 
 https://www.youtube.com/watch?v=oTrtURw761k
+
+## What do the program?
+The program takes a sudoku image in parameters, process it to reduce noises and threshold it. The program searches for the grid and crops if needed, it searches all squares. The squares are given to tesseract to recognize numbers. After all of that, the resolution is ready and the program uses backtracking to solve it.
+It takes an average of 4 seconds.
 
 ## How do I use it?
 To use it, you just have to download the zip file, build the program in your favorite IDE and run it. If you run from the console you just have to put as first 
