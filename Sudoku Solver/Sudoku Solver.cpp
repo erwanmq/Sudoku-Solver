@@ -12,17 +12,18 @@ int main(int argc, const char* argv[])
 	// doesn't print the different messages in the console
 	cv::utils::logging::setLogLevel(cv::utils::logging::LogLevel::LOG_LEVEL_SILENT);
 
-	/*if (argc != 2)
+	////////// /!\ if you want to run the program in an ide, you have to remove these 6 lines and change the variable path_image! ///////////
+	if (argc != 2)
 	{
 		std::cout << "Enter one sudoku image\n";
 		std::cin.get();
 		return -1;
-	}*/
+	}
 
 
 	cv::Mat sudoku_image;
-	const char* path_image = *argv;
-	sudoku_image = cv::imread("sudoku_test.png"); // read the image
+	const char* path_image = argv[1];
+	sudoku_image = cv::imread(path_image); // read the image
 
 	if (sudoku_image.empty()) // check if the image was load correctly
 	{
@@ -49,7 +50,7 @@ int main(int argc, const char* argv[])
 	sudoku->printResult();
 	sudoku->printResultImage();
 
-	std::cout << "Are your results correct?(Y/n) >>";
+	std::cout << "If you see red numbers above the numbers of the sudoku the result can be wrong. You can enter manually the numbers:\nAre your results correct?(Y/n) >>";
 	char answer;
 	do {
 		std::cin >> answer;

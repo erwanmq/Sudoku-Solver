@@ -133,12 +133,13 @@ const bool Sudo::Sudoku::detectNumbers()
 	tess->SetPageSegMode(tesseract::PSM_RAW_LINE);
 
 	m_numbers_sudoku.resize(m_squares_vector.size()); // resize the vector to the same size of the numbers of squares
+	cv::Mat image;
 	for (size_t col = 0; col < m_squares_vector.size(); col++) // loop through columns
 	{
 		for (size_t row = 0; row < m_squares_vector[col].size(); row++) // loop through lines
 		{
 			// threshold the image and inverse it. The numbers become white on a black background
-			cv::threshold(m_squares_vector[col][row], m_squares_vector[col][row], 150, 255, cv::THRESH_BINARY_INV); 
+			cv::threshold(m_squares_vector[col][row], m_squares_vector[col][row], 150, 255, cv::THRESH_BINARY_INV);
 			// create a kernel to dilate and erode
 			cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
 			cv::dilate(m_squares_vector[col][row], m_squares_vector[col][row], kernel);
@@ -249,6 +250,7 @@ const bool Sudoku::unique_number(int _number, int _row, int _col)
 // the main function for resolving the sudoku using backtracking
 const void Sudoku::resolveSudoku()
 {
+	m_numbers_solutions.clear();
 	m_numbers_solutions = m_numbers_sudoku; // copy the numbers of the sudoku to the vector that will store the solutions
 	
 	for (int col = 0; col < m_numbers_solutions.size(); col++) // loop through the columns of the sudoku
@@ -344,18 +346,21 @@ const void Sudoku::enterManualNumbers()
 	{
 		for (size_t j = 0; j < m_squares_vector[i].size(); j++)
 		{
-			//cv::cvtColor(m_squares_vector[i][j], m_squares_vector[i][j], cv::COLOR_RGBA2GRAY);
-			//cv::threshold(m_squares_vector[i][j], m_squares_vector[i][j], 150, 255, cv::THRESH_BINARY_INV);
-			int blackPixel = cv::countNonZero(m_squares_vector[i][j]);
-			cv::imshow("square", m_squares_vector[i][j]);
+			cv::Mat image;
+			cv::cvtColor(m_squares_vector[i][j], image, cv::COLOR_RGBA2GRAY);
+			//cv::threshold(image, image, 150, 255, cv::THRESH_BINARY_INV);
+			int blackPixel = cv::countNonZero(image);
+			cv::imshow("square", image);
+			cv::waitKey(20);
 			if (blackPixel > 500 * m_image_sudoku.size().width / 1200)
 			{
 				int value;
 				std::cin >> value;
-				m_numbers_solutions[i].push_back(value);
+				m_numbers_sudoku[i].push_back(value);
 				std::cout << ">>";
 			}
-			m_numbers_solutions[i].push_back(0);
+			else
+				m_numbers_sudoku[i].push_back(0);
 		}
 	}
 }

@@ -130,7 +130,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>D:\VCPKG\vcpkg\installed\x64-windows\lib;D:\C++ Library\OpenCV\install\x64\vc17\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opencv_core470.lib;opencv_imgcodecs470.lib;opencv_imgproc470.lib;opencv_highgui470.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencv_core470.lib;opencv_imgproc470.lib;opencv_imgcodecs470.lib;opencv_highgui470.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
