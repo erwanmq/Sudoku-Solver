@@ -1,6 +1,6 @@
 # Sudoku Solver
 ## What is the project?
-The Sudoku Solver is a c++ program that allows the user to enter a sudoku image and the program gives in output the solution. The program use OpenCV for the image
+The Sudoku Solver is a c++ program that allows the user to enter a sudoku image and the program gives in output the solution. The program uses OpenCV for the image
 processing and Tesseract for numbers recognition.
 
 ### Input:
