@@ -11,7 +11,7 @@ processing and Tesseract for numbers recognition.
 ### You can see a demo of this program in this youtube video: 
 https://www.youtube.com/watch?v=oTrtURw761k
 
-## What do the program?
+## What does the program do?
 The program takes a sudoku image in parameters, process it to reduce noises and threshold it. The program searches for the grid and crops if needed, it searches all squares. The squares are given to tesseract to recognize numbers. After all of that, the resolution is ready and the program uses backtracking to solve it.
 It takes an average of 4 seconds.
 
