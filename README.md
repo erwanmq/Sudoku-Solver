@@ -30,4 +30,4 @@ if (argc != 2)
  
  ## Does it work every time?
  For the moment the sudoku solver has few problems for this part. If the image is clean, big, with no contrast of color it will work.
- But the numbers recognition can failed. That's why I add a manual function that allows the user to enter the differents numbers.
+ But the numbers recognition can fail. That's why I add a manual function that allows the user to enter the differents numbers.
